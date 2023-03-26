@@ -1,16 +1,30 @@
 //: [Previous](@previous)
 //: # Introduction
 /*:
- Swift generics were designed with four primary goals in mind:
- 1. Generic definitions should be independently type checked, without knowledge of all possible concrete type substitutions that they are invoked with.
- 2. Shared libraries that export generic definitions should be able to evolve resiliently without requiring recompilation of clients.
- 3. Layouts of generic types should be determined by their concrete substitutions, with fields of generic parameter type stored inline.
- 4. Abstraction over concrete types with generic parameters should only impose a cost across module boundaries, or in other situations where type information is not available at compile time.
+ Swift 제네릭은 네 가지 주요 목표를 바탕으로 설계되었습니다:
+
+1.Generic 정의는 호출될 때 대입될 수 있는 모든 구체적인 유형을 미리 알지 않아도 독립적으로 유형 검사를 수행할 수 있어야 합니다.
  
- The Swift compiler achieves these goals as follows:
- 1. The interface between a generic definition and its uses is mediated by generic requirements. The generic requirements describe the behavior of the generic parameter types inside the function body, and the generic arguments at the call site are checked against the declaration’s generic requirements at compile time.
- 2. Generic functions receive runtime type metadata for each generic argument from the caller. Type metadata defines operations to abstractly manipulate values of their type without knowledge of their concrete layout.
- 3. Runtime type metadata is constructed for each type in the language. The runtime type layout of a generic type is computed recursively from the type metadata of the generic arguments. Generic types always store their contents without boxing or indirection.
- 4. The optimizer can generate a specialization of a generic function in the case where the definition is visible at the call site. This eliminates the overhead of runtime type metadata and abstract value manipulation.
+2.Generic 정의를 내보내는 공유 라이브러리는 클라이언트의 재컴파일을 필요로하지 않고 유연하게 진화할 수 있어야 합니다.
+ 
+3.Generic 유형의 레이아웃은 그들의 구체적인 대체물에 의해 결정되어야 하며, Generic 매개변수 유형의 필드는 인라인으로 저장되어야 합니다.
+ 
+4.Generic 매개변수를 사용하여 구체적인 유형을 추상화하는 것은 모듈 경계를 넘어서거나 컴파일 시간에 유형 정보를 사용할 수 없는 다른 상황에서만 비용을 부과해야 합니다.
+ */
+/*:
+ Swift 컴파일러는 다음과 같은 방식으로 이러한 목표를 달성합니다:
+
+1.Generic 정의와 사용 사이의 인터페이스는 일반적인 요구사항에 의해 중재됩니다. Generic 요구사항은 함수 내부에서 Generic 매개변수 유형의 동작을 설명하며, 호출지의 Generic 인수는 선언의 Generic 요구사항과 컴파일 시간에 검사됩니다.
+ 
+2.Generic 함수는 호출자로부터 각 Generic 인수에 대한 런타임 유형 메타데이터를 받습니다. 유형 메타데이터는 구체적인 레이아웃 정보 없이 그들의 유형 값을 추상적으로 조작하기 위한 작업을 정의합니다.
+ 
+3.런타임 유형 메타데이터는 언어의 각 유형에 대해 구성됩니다. Generic 유형의 런타임 유형 레이아웃은 Generic 인수의 유형 메타데이터에서 재귀적으로 계산됩니다. Generic 유형은 항상 박싱이나 간접화 없이 그들의 내용물을 저장합니다.
+ 
+4.최적화기는 정의가 호출 지점에서 볼 수 있을 때 Generic 함수의 특수화를 생성할 수 있습니다. 이는 런타임 유형 메타데이터와 추상값 조작의 오버헤드를 제거합니다.
+ */
+/*:
+ 컴파일러 구현의 중요한 부분은 컴파일 대상 언어의 개념을 모델링하기 위한 도메인 객체의 설계입니다. 컴파일러를 생각하는 한 가지 방법은 그것이 대상 언어를 구현하는 라이브러리라고 생각하는 것입니다. 잘 설계된 도메인 객체 집합은 기존 기능을 새로운 방식으로 조합하여 새로운 언어 기능을 도입하는 것을 용이하게 합니다.
+
+ Generics 구현은 일반화된 시그니처, 치환 맵, 요구 사항 시그니처 및 일치에 대한 네 가지 기본 도메인 객체를 다룹니다. 이들은 서로의 관계뿐만 아니라 내재적인 구조에 따라 정의되기 때문에, 이해하기 위해서는 모두 살펴봐야 합니다. 다음 장에서는 자세한 내용을 다루겠지만, 먼저 큰 그림을 이해하는 데 도움이 되는 일련의 실습 예제를 살펴보겠습니다.
  */
 //: [Next](@next)
